@@ -36,7 +36,7 @@
 
     // Función para obtener los datos de ThingSpeak
     function fetchData() {
-      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=5";
+      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=3";
 
       fetch(apiUrl)
         .then(response => {
@@ -152,7 +152,7 @@
 
     // Llamar a fetchData con un retraso inicial
     setTimeout(fetchData, 2000); // Espera 2 segundos para evitar problemas con Cloudflare
-    setInterval(fetchData, 30000); // Intervalo de 30 segundos
+    setInterval(fetchData, 60000); // Intervalo de 30 segundos
 
     // Alternar tema claro/oscuro
     const themeToggle = document.getElementById("theme-toggle");
