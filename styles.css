@@ -112,16 +112,6 @@ body.dark-theme .theme-button {
 body.dark-theme .theme-button:hover {
   background: #3b82f6;
 }
-.chart-container {
-  margin-top: 20px;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  transition: background 0.3s ease;
-}
-body.dark-theme .chart-container {
-  background: #374151;
-}
 p.alert {
   background: #fee2e2;
   color: #b91c1c;
