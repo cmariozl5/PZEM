@@ -62,7 +62,7 @@
 
           // Resaltar si la potencia está fuera del rango 70-123 W
           const powerRow = document.getElementById("power").parentElement;
-          if (power < 70 || power > 123) {
+          if (power > 70 || power > 123) {
             powerRow.classList.add("alert");
           } else {
             powerRow.classList.remove("alert");
