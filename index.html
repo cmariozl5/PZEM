@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Monitoreo Nevera - PZEM-004T</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="data-box">
+    <h2>Monitoreo Nevera</h2>
+    <p><span class="label">Voltaje:</span> <span class="value" id="voltage" data-unit="V">Cargando...</span></p>
+    <p><span class="label">Corriente:</span> <span class="value" id="current" data-unit="A">Cargando...</span></p>
+    <p><span class="label">Potencia:</span> <span class="value" id="power" data-unit="W">Cargando...</span></p>
+    <p><span class="label">Energía:</span> <span class="value" id="energy" data-unit="kWh">Cargando...</span></p>
+    <p><span class="label">Factor de Potencia:</span> <span class="value" id="pf" data-unit="">Cargando...</span></p>
+    <p><span class="label">Tiempo Potencia 70-123 W:</span> <span class="value" id="timePower70to120" data-unit="">Cargando...</span></p>
+    <p><span class="label">Tiempo Encendido:</span> <span class="value" id="timeOn" data-unit="">Cargando...</span></p>
+    <p><span class="label">Tiempo Apagado:</span> <span class="value" id="timeOff" data-unit="">Cargando...</span></p>
+  </div>
+
+  <script>
+    // Función para convertir segundos a formato HH:MM:SS
+    function secondsToHMS(seconds) {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Función para obtener los datos de ThingSpeak
+    function fetchData() {
+      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=1";
+
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          const feed = data.feeds[0];
+          document.getElementById("voltage").innerText = feed.field1;
+          document.getElementById("current").innerText = feed.field2;
+          document.getElementById("power").innerText = feed.field3;
+          document.getElementById("energy").innerText = feed.field4;
+          document.getElementById("timePower70to120").innerText = secondsToHMS(parseInt(feed.field5));
+          document.getElementById("pf").innerText = feed.field6;
+          document.getElementById("timeOn").innerText = secondsToHMS(parseInt(feed.field7));
+          document.getElementById("timeOff").innerText = secondsToHMS(parseInt(feed.field8));
+        })
+        .catch(error => {
+          console.error("Error al obtener datos:", error);
+          document.getElementById("voltage").innerText = "Error";
+          document.getElementById("current").innerText = "Error";
+          document.getElementById("power").innerText = "Error";
+          document.getElementById("energy").innerText = "Error";
+          document.getElementById("timePower70to120").innerText = "Error";
+          document.getElementById("pf").innerText = "Error";
+          document.getElementById("timeOn").innerText = "Error";
+          document.getElementById("timeOff").innerText = "Error";
+        });
+    }
+
+    // Llamar a fetchData cada 15 segundos (mínimo intervalo permitido por ThingSpeak en cuentas gratuitas)
+    fetchData();
+    setInterval(fetchData, 15000);
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9309242f1a26b022',t:'MTc0NDY5NTk3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>
