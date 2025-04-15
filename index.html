@@ -31,12 +31,20 @@
       const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=1";
 
       fetch(apiUrl)
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
         .then(data => {
+          if (!data.feeds || data.feeds.length === 0) {
+            throw new Error("No se encontraron datos en la respuesta de ThingSpeak");
+          }
           const feed = data.feeds[0];
-          document.getElementById("voltage").innerText = feed.field1;
-          document.getElementById("current").innerText = feed.field2;
-          document.getElementById("power").innerText = feed.field3;
+          document.getElementById("voltage").innerText = parseFloat(feed.field1).toFixed(1);
+          document.getElementById("current").innerText = parseFloat(feed.field2).toFixed(2);
+          document.getElementById("power").innerText = parseFloat(feed.field3).toFixed(1);
           document.getElementById("energy").innerText = feed.field4;
           document.getElementById("timePower70to120").innerText = secondsToHMS(parseInt(feed.field5));
           document.getElementById("pf").innerText = feed.field6;
@@ -44,7 +52,7 @@
           document.getElementById("timeOff").innerText = secondsToHMS(parseInt(feed.field8));
         })
         .catch(error => {
-          console.error("Error al obtener datos:", error);
+          console.error("Error al obtener datos:", error.message);
           document.getElementById("voltage").innerText = "Error";
           document.getElementById("current").innerText = "Error";
           document.getElementById("power").innerText = "Error";
@@ -56,11 +64,9 @@
         });
     }
 
-    // Llamar a fetchData cada 15 segundos (mínimo intervalo permitido por ThingSpeak en cuentas gratuitas)
-    fetchData();
+    // Llamar a fetchData con un retraso inicial
+    setTimeout(fetchData, 2000); // Espera 2 segundos para evitar problemas con Cloudflare
     setInterval(fetchData, 15000);
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9309242f1a26b022',t:'MTc0NDY5NTk3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
-</html>
 </html>
