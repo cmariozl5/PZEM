@@ -39,8 +39,16 @@
       const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=10";
 
       fetch(apiUrl)
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
         .then(data => {
+          if (!data.feeds || data.feeds.length === 0) {
+            throw new Error("No se encontraron datos en la respuesta de ThingSpeak");
+          }
           const feeds = data.feeds;
           // Mostrar los datos más recientes
           const latestFeed = feeds[feeds.length - 1];
@@ -74,7 +82,7 @@
           updateChart(labels, voltages, currents, powers);
         })
         .catch(error => {
-          console.error("Error al obtener datos:", error);
+          console.error("Error al obtener datos:", error.message);
           document.getElementById("voltage").innerText = "Error";
           document.getElementById("current").innerText = "Error";
           document.getElementById("power").innerText = "Error";
@@ -142,8 +150,8 @@
       pzemChart.update();
     }
 
-    // Llamar a fetchData cada 15 segundos
-    fetchData();
+    // Llamar a fetchData con un retraso inicial
+    setTimeout(fetchData, 2000); // Espera 2 segundos para evitar problemas con Cloudflare
     setInterval(fetchData, 15000);
 
     // Alternar tema claro/oscuro
