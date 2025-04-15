@@ -3,8 +3,6 @@
 <head>
   <title>Monitoreo Nevera - PZEM-004T</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Incluir Chart.js desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.min.js"></script>
 </head>
 <body>
   <div class="data-box">
@@ -19,10 +17,6 @@
     <p><span class="label">Tiempo Potencia 70-123 W:</span> <span class="value" id="timePower70to120" data-unit="">Cargando...</span></p>
     <p><span class="label">Tiempo Encendido:</span> <span class="value" id="timeOn" data-unit="">Cargando...</span></p>
     <p><span class="label">Tiempo Apagado:</span> <span class="value" id="timeOff" data-unit="">Cargando...</span></p>
-    <!-- Gráfico -->
-    <div class="chart-container">
-      <canvas id="pzemChart"></canvas>
-    </div>
   </div>
 
   <script>
@@ -36,33 +30,35 @@
 
     // Función para obtener los datos de ThingSpeak
     function fetchData() {
-      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=5";
+      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=1";
+
+      console.log("Haciendo solicitud a ThingSpeak:", apiUrl); // Depuración
 
       fetch(apiUrl)
         .then(response => {
+          console.log("Respuesta recibida:", response.status); // Depuración
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           return response.json();
         })
         .then(data => {
+          console.log("Datos recibidos:", data); // Depuración
           if (!data.feeds || data.feeds.length === 0) {
             throw new Error("No se encontraron datos en la respuesta de ThingSpeak");
           }
-          const feeds = data.feeds;
-          // Mostrar los datos más recientes
-          const latestFeed = feeds[feeds.length - 1];
-          const voltage = parseFloat(latestFeed.field1);
-          const current = parseFloat(latestFeed.field2);
-          const power = parseFloat(latestFeed.field3);
+          const feed = data.feeds[0];
+          const voltage = parseFloat(feed.field1);
+          const current = parseFloat(feed.field2);
+          const power = parseFloat(feed.field3);
           document.getElementById("voltage").innerText = voltage.toFixed(1);
           document.getElementById("current").innerText = current.toFixed(2);
           document.getElementById("power").innerText = power.toFixed(1);
-          document.getElementById("energy").innerText = latestFeed.field4;
-          document.getElementById("timePower70to120").innerText = secondsToHMS(parseInt(latestFeed.field5));
-          document.getElementById("pf").innerText = latestFeed.field6;
-          document.getElementById("timeOn").innerText = secondsToHMS(parseInt(latestFeed.field7));
-          document.getElementById("timeOff").innerText = secondsToHMS(parseInt(latestFeed.field8));
+          document.getElementById("energy").innerText = feed.field4;
+          document.getElementById("timePower70to120").innerText = secondsToHMS(parseInt(feed.field5));
+          document.getElementById("pf").innerText = feed.field6;
+          document.getElementById("timeOn").innerText = secondsToHMS(parseInt(feed.field7));
+          document.getElementById("timeOff").innerText = secondsToHMS(parseInt(feed.field8));
 
           // Resaltar si la potencia está fuera del rango 70-123 W
           const powerRow = document.getElementById("power").parentElement;
@@ -71,15 +67,6 @@
           } else {
             powerRow.classList.remove("alert");
           }
-
-          // Preparar datos para el gráfico
-          const labels = feeds.map((feed, index) => `Medición ${feeds.length - index}`);
-          const voltages = feeds.map(feed => parseFloat(feed.field1));
-          const currents = feeds.map(feed => parseFloat(feed.field2));
-          const powers = feeds.map(feed => parseFloat(feed.field3));
-
-          // Actualizar el gráfico
-          updateChart(labels, voltages, currents, powers);
         })
         .catch(error => {
           console.error("Error al obtener datos:", error.message);
@@ -94,65 +81,9 @@
         });
     }
 
-    // Configuración inicial del gráfico
-    const ctx = document.getElementById("pzemChart").getContext("2d");
-    const pzemChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: "Voltaje (V)",
-            data: [],
-            borderColor: "#0277bd",
-            fill: false,
-          },
-          {
-            label: "Corriente (A)",
-            data: [],
-            borderColor: "#ff6f61",
-            fill: false,
-          },
-          {
-            label: "Potencia (W)",
-            data: [],
-            borderColor: "#4caf50",
-            fill: false,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: "Valor",
-            },
-          },
-          x: {
-            title: {
-              display: true,
-              text: "Tiempo",
-            },
-          },
-        },
-      },
-    });
-
-    // Función para actualizar el gráfico
-    function updateChart(labels, voltages, currents, powers) {
-      pzemChart.data.labels = labels;
-      pzemChart.data.datasets[0].data = voltages;
-      pzemChart.data.datasets[1].data = currents;
-      pzemChart.data.datasets[2].data = powers;
-      pzemChart.update();
-    }
-
     // Llamar a fetchData con un retraso inicial
     setTimeout(fetchData, 2000); // Espera 2 segundos para evitar problemas con Cloudflare
-    setInterval(fetchData, 15000);
+    setInterval(fetchData, 30000); // Aumentar intervalo a 30 segundos
 
     // Alternar tema claro/oscuro
     const themeToggle = document.getElementById("theme-toggle");
