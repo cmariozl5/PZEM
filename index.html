@@ -3,10 +3,14 @@
 <head>
   <title>Monitoreo Nevera - PZEM-004T</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Incluir Chart.js desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.min.js"></script>
 </head>
 <body>
   <div class="data-box">
     <h2>Monitoreo Nevera</h2>
+    <!-- Botón para alternar tema -->
+    <button id="theme-toggle" class="theme-button">Cambiar a Tema Oscuro</button>
     <p><span class="label">Voltaje:</span> <span class="value" id="voltage" data-unit="V">Cargando...</span></p>
     <p><span class="label">Corriente:</span> <span class="value" id="current" data-unit="A">Cargando...</span></p>
     <p><span class="label">Potencia:</span> <span class="value" id="power" data-unit="W">Cargando...</span></p>
@@ -15,6 +19,10 @@
     <p><span class="label">Tiempo Potencia 70-123 W:</span> <span class="value" id="timePower70to120" data-unit="">Cargando...</span></p>
     <p><span class="label">Tiempo Encendido:</span> <span class="value" id="timeOn" data-unit="">Cargando...</span></p>
     <p><span class="label">Tiempo Apagado:</span> <span class="value" id="timeOff" data-unit="">Cargando...</span></p>
+    <!-- Gráfico -->
+    <div class="chart-container">
+      <canvas id="pzemChart"></canvas>
+    </div>
   </div>
 
   <script>
@@ -28,20 +36,42 @@
 
     // Función para obtener los datos de ThingSpeak
     function fetchData() {
-      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=1";
+      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=10";
 
       fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
-          const feed = data.feeds[0];
-          document.getElementById("voltage").innerText = feed.field1;
-          document.getElementById("current").innerText = feed.field2;
-          document.getElementById("power").innerText = feed.field3;
-          document.getElementById("energy").innerText = feed.field4;
-          document.getElementById("timePower70to120").innerText = secondsToHMS(parseInt(feed.field5));
-          document.getElementById("pf").innerText = feed.field6;
-          document.getElementById("timeOn").innerText = secondsToHMS(parseInt(feed.field7));
-          document.getElementById("timeOff").innerText = secondsToHMS(parseInt(feed.field8));
+          const feeds = data.feeds;
+          // Mostrar los datos más recientes
+          const latestFeed = feeds[feeds.length - 1];
+          const voltage = parseFloat(latestFeed.field1);
+          const current = parseFloat(latestFeed.field2);
+          const power = parseFloat(latestFeed.field3);
+          document.getElementById("voltage").innerText = voltage.toFixed(1);
+          document.getElementById("current").innerText = current.toFixed(2);
+          document.getElementById("power").innerText = power.toFixed(1);
+          document.getElementById("energy").innerText = latestFeed.field4;
+          document.getElementById("timePower70to120").innerText = secondsToHMS(parseInt(latestFeed.field5));
+          document.getElementById("pf").innerText = latestFeed.field6;
+          document.getElementById("timeOn").innerText = secondsToHMS(parseInt(latestFeed.field7));
+          document.getElementById("timeOff").innerText = secondsToHMS(parseInt(latestFeed.field8));
+
+          // Resaltar si la potencia está fuera del rango 70-123 W
+          const powerRow = document.getElementById("power").parentElement;
+          if (power < 70 || power > 123) {
+            powerRow.classList.add("alert");
+          } else {
+            powerRow.classList.remove("alert");
+          }
+
+          // Preparar datos para el gráfico
+          const labels = feeds.map((feed, index) => `Medición ${feeds.length - index}`);
+          const voltages = feeds.map(feed => parseFloat(feed.field1));
+          const currents = feeds.map(feed => parseFloat(feed.field2));
+          const powers = feeds.map(feed => parseFloat(feed.field3));
+
+          // Actualizar el gráfico
+          updateChart(labels, voltages, currents, powers);
         })
         .catch(error => {
           console.error("Error al obtener datos:", error);
@@ -56,10 +86,76 @@
         });
     }
 
-    // Llamar a fetchData cada 15 segundos (mínimo intervalo permitido por ThingSpeak en cuentas gratuitas)
+    // Configuración inicial del gráfico
+    const ctx = document.getElementById("pzemChart").getContext("2d");
+    const pzemChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Voltaje (V)",
+            data: [],
+            borderColor: "#0277bd",
+            fill: false,
+          },
+          {
+            label: "Corriente (A)",
+            data: [],
+            borderColor: "#ff6f61",
+            fill: false,
+          },
+          {
+            label: "Potencia (W)",
+            data: [],
+            borderColor: "#4caf50",
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Valor",
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: "Tiempo",
+            },
+          },
+        },
+      },
+    });
+
+    // Función para actualizar el gráfico
+    function updateChart(labels, voltages, currents, powers) {
+      pzemChart.data.labels = labels;
+      pzemChart.data.datasets[0].data = voltages;
+      pzemChart.data.datasets[1].data = currents;
+      pzemChart.data.datasets[2].data = powers;
+      pzemChart.update();
+    }
+
+    // Llamar a fetchData cada 15 segundos
     fetchData();
     setInterval(fetchData, 15000);
+
+    // Alternar tema claro/oscuro
+    const themeToggle = document.getElementById("theme-toggle");
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-theme");
+      if (document.body.classList.contains("dark-theme")) {
+        themeToggle.innerText = "Cambiar a Tema Claro";
+      } else {
+        themeToggle.innerText = "Cambiar a Tema Oscuro";
+      }
+    });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9309242f1a26b022',t:'MTc0NDY5NTk3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
