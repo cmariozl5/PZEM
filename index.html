@@ -11,9 +11,7 @@
     <h2>Monitoreo Nevera</h2>
     <!-- Botón para alternar tema -->
     <button id="theme-toggle" class="theme-button">Cambiar a Tema Oscuro</button>
-    <!-- Botón para pausar/reanudar actualizaciones -->
-    <button id="pause-toggle" class="theme-button">Pausar Actualizaciones</button>
-    <!-- Mensaje de última actualización, ahora debajo del botón de tema -->
+    <!-- Mensaje de última actualización -->
     <p id="last-update" class="last-update">Última actualización: Cargando...</p>
     <p><span class="label">Voltaje:</span> <span class="value" id="voltage" data-unit="V">Cargando...</span></p>
     <p><span class="label">Corriente:</span> <span class="value" id="current" data-unit="A">Cargando...</span></p>
@@ -136,7 +134,6 @@
     }
 
     // Función para obtener los datos de ThingSpeak
-    let updateInterval;
     function fetchData() {
       const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=2";
 
@@ -227,24 +224,8 @@
     }
 
     // Iniciar actualizaciones
-    let isPaused = false;
     setTimeout(fetchData, 2000); // Primera carga después de 2 segundos
-    updateInterval = setInterval(fetchData, 60000); // Actualizar cada 60 segundos
-
-    // Botón para pausar/reanudar actualizaciones
-    const pauseToggle = document.getElementById("pause-toggle");
-    pauseToggle.addEventListener("click", () => {
-      if (isPaused) {
-        updateInterval = setInterval(fetchData, 60000);
-        pauseToggle.innerText = "Pausar Actualizaciones";
-        isPaused = false;
-        fetchData(); // Forzar una actualización inmediata
-      } else {
-        clearInterval(updateInterval);
-        pauseToggle.innerText = "Reanudar Actualizaciones";
-        isPaused = true;
-      }
-    });
+    setInterval(fetchData, 60000); // Actualizar cada 60 segundos
 
     // Alternar tema claro/oscuro y guardar preferencia
     const themeToggle = document.getElementById("theme-toggle");
