@@ -45,96 +45,52 @@ p {
   font-size: 18px;
   margin: 12px 0;
   padding: 10px;
+  background: #f5f5f5;
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   transition: background 0.3s ease, color 0.3s ease;
 }
+body.dark-theme p {
+  background: #374151;
+  color: #e5e7eb;
+}
+p:hover {
+  background: #e0f7fa;
+}
+body.dark-theme p:hover {
+  background: #4b5563;
+}
 .label {
   font-weight: 600;
-  color: #ff0000; /* Etiquetas en rojo, como en la pantalla TFT */
+  color: #37474f;
   flex: 1;
   text-align: left;
   transition: color 0.3s ease;
 }
 body.dark-theme .label {
-  color: #ff5555; /* Un rojo más claro para el tema oscuro */
+  color: #d1d5db;
 }
 .value {
   flex: 1;
   text-align: right;
+  color: #0277bd;
   font-weight: 500;
   transition: color 0.3s ease;
 }
+body.dark-theme .value {
+  color: #60a5fa;
+}
 .value::after {
   content: attr(data-unit);
+  color: #78909c;
   margin-left: 5px;
   font-size: 16px;
   transition: color 0.3s ease;
 }
-/* Colores específicos para cada dato */
-.voltage {
-  background: #00b7eb; /* Azul claro, como en la pantalla TFT */
-}
-.voltage .value, .voltage .value::after {
-  color: #ffffff; /* Texto blanco */
-}
-.current {
-  background: #ffff00; /* Amarillo, como en la pantalla TFT */
-}
-.current .value, .current .value::after {
-  color: #000000; /* Texto negro */
-}
-.power {
-  background: #0000ff; /* Azul, como en la pantalla TFT */
-}
-.power .power .value, .power .value::after {
-  color: #ffffff; /* Texto blanco */
-}
-.energy {
-  background: #000000; /* Negro, como en la pantalla TFT */
-}
-.energy .value, .energy .value::after {
-  color: #ffffff; /* Texto blanco */
-}
-.pf {
-  background: #800080; /* Morado, como en la pantalla TFT */
-}
-.pf .value, .pf .value::after {
-  color: #ffffff; /* Texto blanco */
-}
-.timePower70to120 {
-  background: #808080; /* Gris, nuevo color */
-}
-.timePower70to120 .value, .timePower70to120 .value::after {
-  color: #ffffff; /* Texto blanco */
-}
-.timeOn {
-  background: #00ff00; /* Verde, similar a "Frecuencia" en la pantalla TFT */
-}
-.timeOn .value, .timeOn .value::after {
-  color: #000000; /* Texto negro */
-}
-.timeOff {
-  background: #404040; /* Gris oscuro, nuevo color */
-}
-.timeOff .value, .timeOff .value::after {
-  color: #ffffff; /* Texto blanco */
-}
-/* Estilo para el mensaje de última actualización */
-.last-update {
-  font-size: 16px;
-  color: #ffffff;
-  margin: 10px 0;
-  background: #0000ff; /* Fondo azul, como en la pantalla TFT */
-  border-radius: 8px;
-  padding: 10px;
-  transition: background 0.3s ease, color 0.3s ease;
-}
-body.dark-theme .last-update {
-  background: #5555ff; /* Azul más claro para el tema oscuro */
-  color: #ffffff;
+body.dark-theme .value::after {
+  color: #9ca3af;
 }
 .theme-button {
   padding: 10px 20px;
@@ -156,9 +112,46 @@ body.dark-theme .theme-button {
 body.dark-theme .theme-button:hover {
   background: #3b82f6;
 }
+.chart-container {
+  margin-top: 20px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+  width: 100%;
+  height: 300px;
+}
+body.dark-theme .chart-container {
+  background: #374151;
+}
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
 p.alert {
-  border: 2px solid #b91c1c; /* Borde rojo para la alerta */
+  background: #fee2e2;
+  color: #b91c1c;
 }
 body.dark-theme p.alert {
-  border: 2px solid #ff5555;
+  background: #b91c1c;
+  color: #fee2e2;
+}
+.last-update {
+  font-size: 16px; /* Tamaño más grande para que sea consistente */
+  color: #666;
+  margin: 10px 0;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 10px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+body.dark-theme .last-update {
+  background: #374151;
+  color: #b0b0b0;
+}
+.last-update:hover {
+  background: #e0f7fa;
+}
+body.dark-theme .last-update:hover {
+  background: #4b5563;
 }
