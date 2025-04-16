@@ -94,7 +94,7 @@ body.dark-theme .value::after {
 }
 .theme-button {
   padding: 10px 20px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   background: #0277bd;
   color: #ffffff;
   border: none;
@@ -112,6 +112,22 @@ body.dark-theme .theme-button {
 body.dark-theme .theme-button:hover {
   background: #3b82f6;
 }
+.chart-container {
+  margin-top: 20px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+  width: 100%;
+  height: 300px;
+}
+body.dark-theme .chart-container {
+  background: #374151;
+}
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
 p.alert {
   background: #fee2e2;
   color: #b91c1c;
@@ -119,4 +135,23 @@ p.alert {
 body.dark-theme p.alert {
   background: #b91c1c;
   color: #fee2e2;
+}
+.last-update {
+  font-size: 16px; /* Tamaño más grande para que sea consistente */
+  color: #666;
+  margin: 10px 0;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 10px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+body.dark-theme .last-update {
+  background: #374151;
+  color: #b0b0b0;
+}
+.last-update:hover {
+  background: #e0f7fa;
+}
+body.dark-theme .last-update:hover {
+  background: #4b5563;
 }
