@@ -11,6 +11,10 @@
     <h2>Monitoreo Nevera</h2>
     <!-- Botón para alternar tema -->
     <button id="theme-toggle" class="theme-button">Cambiar a Tema Oscuro</button>
+    <!-- Botón para pausar/reanudar actualizaciones -->
+    <button id="pause-toggle" class="theme-button">Pausar Actualizaciones</button>
+    <!-- Mensaje de última actualización, ahora debajo del botón de tema -->
+    <p id="last-update" class="last-update">Última actualización: Cargando...</p>
     <p><span class="label">Voltaje:</span> <span class="value" id="voltage" data-unit="V">Cargando...</span></p>
     <p><span class="label">Corriente:</span> <span class="value" id="current" data-unit="A">Cargando...</span></p>
     <p><span class="label">Potencia:</span> <span class="value" id="power" data-unit="W">Cargando...</span></p>
@@ -32,6 +36,17 @@
       const minutes = Math.floor((seconds % 3600) / 60);
       const secs = seconds % 60;
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Función para formatear la fecha y hora
+    function formatDateTime(date) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const seconds = date.getSeconds().toString().padStart(2, '0');
+      return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     }
 
     // Función para actualizar los valores en la página
@@ -61,6 +76,9 @@
         } else {
           powerRow.classList.remove("alert");
         }
+
+        // Actualizar el mensaje de última actualización
+        document.getElementById("last-update").innerText = `Última actualización: ${formatDateTime(new Date())}`;
       } catch (error) {
         console.error("Error al actualizar valores:", error.message);
         setErrorState();
@@ -90,13 +108,15 @@
           return isNaN(value) ? 0 : value;
         });
 
-        console.log("Datos del gráfico:", { labels, voltages, currents, powers });
+        console.log("Datos preparados para el gráfico:", { labels, voltages, currents, powers });
 
         pzemChart.data.labels = labels;
         pzemChart.data.datasets[0].data = voltages;
         pzemChart.data.datasets[1].data = currents;
         pzemChart.data.datasets[2].data = powers;
+        console.log("Actualizando gráfico...");
         pzemChart.update();
+        console.log("Gráfico actualizado exitosamente");
       } catch (error) {
         console.error("Error al actualizar el gráfico:", error.message);
       }
@@ -112,9 +132,11 @@
       document.getElementById("pf").innerText = message;
       document.getElementById("timeOn").innerText = message;
       document.getElementById("timeOff").innerText = message;
+      document.getElementById("last-update").innerText = `Última actualización: ${message}`;
     }
 
     // Función para obtener los datos de ThingSpeak
+    let updateInterval;
     function fetchData() {
       const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=2";
 
@@ -181,6 +203,7 @@
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           scales: {
             y: {
               beginAtZero: true,
@@ -198,22 +221,46 @@
           },
         },
       });
+      console.log("Gráfico inicializado correctamente");
     } catch (error) {
       console.error("Error al inicializar el gráfico:", error.message);
     }
 
-    // Llamar a fetchData con un retraso inicial
-    setTimeout(fetchData, 2000); // Espera 2 segundos para evitar problemas con Cloudflare
-    setInterval(fetchData, 60000); // Intervalo de 60 segundos
+    // Iniciar actualizaciones
+    let isPaused = false;
+    setTimeout(fetchData, 2000); // Primera carga después de 2 segundos
+    updateInterval = setInterval(fetchData, 60000); // Actualizar cada 60 segundos
 
-    // Alternar tema claro/oscuro
+    // Botón para pausar/reanudar actualizaciones
+    const pauseToggle = document.getElementById("pause-toggle");
+    pauseToggle.addEventListener("click", () => {
+      if (isPaused) {
+        updateInterval = setInterval(fetchData, 60000);
+        pauseToggle.innerText = "Pausar Actualizaciones";
+        isPaused = false;
+        fetchData(); // Forzar una actualización inmediata
+      } else {
+        clearInterval(updateInterval);
+        pauseToggle.innerText = "Reanudar Actualizaciones";
+        isPaused = true;
+      }
+    });
+
+    // Alternar tema claro/oscuro y guardar preferencia
     const themeToggle = document.getElementById("theme-toggle");
+    // Cargar la preferencia del tema desde localStorage
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark-theme");
+      themeToggle.innerText = "Cambiar a Tema Claro";
+    }
     themeToggle.addEventListener("click", () => {
       document.body.classList.toggle("dark-theme");
       if (document.body.classList.contains("dark-theme")) {
         themeToggle.innerText = "Cambiar a Tema Claro";
+        localStorage.setItem("theme", "dark");
       } else {
         themeToggle.innerText = "Cambiar a Tema Oscuro";
+        localStorage.setItem("theme", "light");
       }
     });
   </script>
