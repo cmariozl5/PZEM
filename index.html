@@ -3,8 +3,6 @@
 <head>
   <title>Monitoreo Nevera - PZEM-004T</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Incluir Chart.js desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.min.js"></script>
 </head>
 <body>
   <div class="data-box">
@@ -13,18 +11,14 @@
     <button id="theme-toggle" class="theme-button">Cambiar a Tema Oscuro</button>
     <!-- Mensaje de última actualización -->
     <p id="last-update" class="last-update">Última actualización: Cargando...</p>
-    <p><span class="label">Voltaje:</span> <span class="value" id="voltage" data-unit="V">Cargando...</span></p>
-    <p><span class="label">Corriente:</span> <span class="value" id="current" data-unit="A">Cargando...</span></p>
-    <p><span class="label">Potencia:</span> <span class="value" id="power" data-unit="W">Cargando...</span></p>
-    <p><span class="label">Energía:</span> <span class="value" id="energy" data-unit="kWh">Cargando...</span></p>
-    <p><span class="label">Factor de Potencia:</span> <span class="value" id="pf" data-unit="">Cargando...</span></p>
-    <p><span class="label">Tiempo Potencia 70-123 W:</span> <span class="value" id="timePower70to120" data-unit="">Cargando...</span></p>
-    <p><span class="label">Compresor on:</span> <span class="value" id="timeOn" data-unit="">Cargando...</span></p>
-    <p><span class="label">Compresor off:</span> <span class="value" id="timeOff" data-unit="">Cargando...</span></p>
-    <!-- Gráfico -->
-    <div class="chart-container">
-      <canvas id="pzemChart"></canvas>
-    </div>
+    <p class="voltage"><span class="label">Voltaje:</span> <span class="value" id="voltage" data-unit="V">Cargando...</span></p>
+    <p class="current"><span class="label">Corriente:</span> <span class="value" id="current" data-unit="A">Cargando...</span></p>
+    <p class="power"><span class="label">Potencia:</span> <span class="value" id="power" data-unit="W">Cargando...</span></p>
+    <p class="energy"><span class="label">Energía:</span> <span class="value" id="energy" data-unit="kWh">Cargando...</span></p>
+    <p class="pf"><span class="label">Factor de Potencia:</span> <span class="value" id="pf" data-unit="">Cargando...</span></p>
+    <p class="timePower70to120"><span class="label">Tiempo Potencia 70-123 W:</span> <span class="value" id="timePower70to120" data-unit="">Cargando...</span></p>
+    <p class="timeOn"><span class="label">Compresor on:</span> <span class="value" id="timeOn" data-unit="">Cargando...</span></p>
+    <p class="timeOff"><span class="label">Compresor off:</span> <span class="value" id="timeOff" data-unit="">Cargando...</span></p>
   </div>
 
   <script>
@@ -41,10 +35,12 @@
       const day = date.getDate().toString().padStart(2, '0');
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
       const year = date.getFullYear();
-      const hours = date.getHours().toString().padStart(2, '0');
+      const hours = date.getHours();
       const minutes = date.getMinutes().toString().padStart(2, '0');
       const seconds = date.getSeconds().toString().padStart(2, '0');
-      return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+      const ampm = hours >= 12 ? 'pm' : 'am';
+      const formattedHours = (hours % 12) || 12; // Convertir a formato 12 horas
+      return `${day}/${month}/${year} ${formattedHours}:${minutes}:${seconds} ${ampm}`;
     }
 
     // Función para actualizar los valores en la página
@@ -83,43 +79,6 @@
       }
     }
 
-    // Función para actualizar el gráfico
-    function updateChart(feeds) {
-      try {
-        if (feeds.length === 0) {
-          console.warn("No hay datos para mostrar en el gráfico");
-          return;
-        }
-
-        console.log("Procesando datos para el gráfico:", feeds);
-        const labels = feeds.map((feed, index) => `Medición ${feeds.length - index}`);
-        const voltages = feeds.map(feed => {
-          const value = parseFloat(feed.field1);
-          return isNaN(value) ? 0 : value;
-        });
-        const currents = feeds.map(feed => {
-          const value = parseFloat(feed.field2);
-          return isNaN(value) ? 0 : value;
-        });
-        const powers = feeds.map(feed => {
-          const value = parseFloat(feed.field3);
-          return isNaN(value) ? 0 : value;
-        });
-
-        console.log("Datos preparados para el gráfico:", { labels, voltages, currents, powers });
-
-        pzemChart.data.labels = labels;
-        pzemChart.data.datasets[0].data = voltages;
-        pzemChart.data.datasets[1].data = currents;
-        pzemChart.data.datasets[2].data = powers;
-        console.log("Actualizando gráfico...");
-        pzemChart.update();
-        console.log("Gráfico actualizado exitosamente");
-      } catch (error) {
-        console.error("Error al actualizar el gráfico:", error.message);
-      }
-    }
-
     // Función para establecer estado de error
     function setErrorState(message = "Error") {
       document.getElementById("voltage").innerText = message;
@@ -135,7 +94,7 @@
 
     // Función para obtener los datos de ThingSpeak
     function fetchData() {
-      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=2";
+      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=1";
 
       console.log("Haciendo solicitud a ThingSpeak:", apiUrl); // Depuración
 
@@ -160,67 +119,11 @@
           }
           // Actualizar los valores en la página
           updateValues(feeds[feeds.length - 1]);
-          // Actualizar el gráfico
-          updateChart(feeds);
         })
         .catch(error => {
           console.error("Error al obtener datos:", error.message);
           setErrorState();
         });
-    }
-
-    // Configuración inicial del gráfico
-    let pzemChart;
-    try {
-      const ctx = document.getElementById("pzemChart").getContext("2d");
-      pzemChart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: [],
-          datasets: [
-            {
-              label: "Voltaje (V)",
-              data: [],
-              borderColor: "#0277bd",
-              fill: false,
-            },
-            {
-              label: "Corriente (A)",
-              data: [],
-              borderColor: "#ff6f61",
-              fill: false,
-            },
-            {
-              label: "Potencia (W)",
-              data: [],
-              borderColor: "#4caf50",
-              fill: false,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: "Valor",
-              },
-            },
-            x: {
-              title: {
-                display: true,
-                text: "Tiempo",
-              },
-            },
-          },
-        },
-      });
-      console.log("Gráfico inicializado correctamente");
-    } catch (error) {
-      console.error("Error al inicializar el gráfico:", error.message);
     }
 
     // Iniciar actualizaciones
