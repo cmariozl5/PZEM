@@ -1,157 +1,249 @@
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  text-align: center;
-  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
-  margin: 0;
-  padding: 20px;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: background 0.3s ease;
-}
-body.dark-theme {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-}
-.data-box {
-  margin: 20px auto;
-  padding: 30px;
-  border: none;
-  border-radius: 15px;
-  max-width: 600px;
-  background: #ffffff;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-}
-body.dark-theme .data-box {
-  background: #1f2937;
-}
-.data-box:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-}
-h2 {
-  color: #0277bd;
-  font-size: 28px;
-  margin-bottom: 20px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: color 0.3s ease;
-}
-body.dark-theme h2 {
-  color: #60a5fa;
-}
-p {
-  font-size: 18px;
-  margin: 12px 0;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: background 0.3s ease, color 0.3s ease;
-}
-body.dark-theme p {
-  background: #374151;
-  color: #e5e7eb;
-}
-p:hover {
-  background: #e0f7fa;
-}
-body.dark-theme p:hover {
-  background: #4b5563;
-}
-.label {
-  font-weight: 600;
-  color: #37474f;
-  flex: 1;
-  text-align: left;
-  transition: color 0.3s ease;
-}
-body.dark-theme .label {
-  color: #d1d5db;
-}
-.value {
-  flex: 1;
-  text-align: right;
-  color: #0277bd;
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-body.dark-theme .value {
-  color: #60a5fa;
-}
-.value::after {
-  content: attr(data-unit);
-  color: #78909c;
-  margin-left: 5px;
-  font-size: 16px;
-  transition: color 0.3s ease;
-}
-body.dark-theme .value::after {
-  color: #9ca3af;
-}
-.theme-button {
-  padding: 10px 20px;
-  margin-bottom: 10px;
-  background: #0277bd;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.3s ease;
-}
-.theme-button:hover {
-  background: #01579b;
-}
-body.dark-theme .theme-button {
-  background: #60a5fa;
-}
-body.dark-theme .theme-button:hover {
-  background: #3b82f6;
-}
-.chart-container {
-  margin-top: 20px;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  transition: background 0.3s ease;
-  width: 100%;
-  height: 300px;
-}
-body.dark-theme .chart-container {
-  background: #374151;
-}
-.chart-container canvas {
-  width: 100% !important;
-  height: 100% !important;
-}
-p.alert {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-body.dark-theme p.alert {
-  background: #b91c1c;
-  color: #fee2e2;
-}
-.last-update {
-  font-size: 16px; /* Tamaño más grande para que sea consistente */
-  color: #666;
-  margin: 10px 0;
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 10px;
-  transition: background 0.3s ease, color 0.3s ease;
-}
-body.dark-theme .last-update {
-  background: #374151;
-  color: #b0b0b0;
-}
-.last-update:hover {
-  background: #e0f7fa;
-}
-body.dark-theme .last-update:hover {
-  background: #4b5563;
-}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Monitoreo Nevera - PZEM-004T</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Incluir Chart.js desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.min.js"></script>
+</head>
+<body>
+  <div class="data-box">
+    <h2>Monitoreo Nevera</h2>
+    <!-- Botón para alternar tema -->
+    <button id="theme-toggle" class="theme-button">Cambiar a Tema Oscuro</button>
+    <!-- Mensaje de última actualización -->
+    <p id="last-update" class="last-update">Última actualización: Cargando...</p>
+    <p><span class="label">Voltaje:</span> <span class="value" id="voltage" data-unit="V">Cargando...</span></p>
+    <p><span class="label">Corriente:</span> <span class="value" id="current" data-unit="A">Cargando...</span></p>
+    <p><span class="label">Potencia:</span> <span class="value" id="power" data-unit="W">Cargando...</span></p>
+    <p><span class="label">Energía:</span> <span class="value" id="energy" data-unit="kWh">Cargando...</span></p>
+    <p><span class="label">Factor de Potencia:</span> <span class="value" id="pf" data-unit="">Cargando...</span></p>
+    <p><span class="label">Tiempo Potencia 70-123 W:</span> <span class="value" id="timePower70to120" data-unit="">Cargando...</span></p>
+    <p><span class="label">Compresor on:</span> <span class="value" id="timeOn" data-unit="">Cargando...</span></p>
+    <p><span class="label">Compresor off:</span> <span class="value" id="timeOff" data-unit="">Cargando...</span></p>
+    <!-- Gráfico -->
+    <div class="chart-container">
+      <canvas id="pzemChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Función para convertir segundos a formato HH:MM:SS
+    function secondsToHMS(seconds) {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Función para formatear la fecha y hora
+    function formatDateTime(date) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const seconds = date.getSeconds().toString().padStart(2, '0');
+      return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    }
+
+    // Función para actualizar los valores en la página
+    function updateValues(feed) {
+      try {
+        const voltage = parseFloat(feed.field1);
+        const current = parseFloat(feed.field2);
+        const power = parseFloat(feed.field3);
+
+        if (isNaN(voltage) || isNaN(current) || isNaN(power)) {
+          throw new Error("Valores inválidos para voltaje, corriente o potencia");
+        }
+
+        document.getElementById("voltage").innerText = voltage.toFixed(1);
+        document.getElementById("current").innerText = current.toFixed(2);
+        document.getElementById("power").innerText = power.toFixed(1);
+        document.getElementById("energy").innerText = feed.field4 || "N/A";
+        document.getElementById("timePower70to120").innerText = secondsToHMS(parseInt(feed.field5) || 0);
+        document.getElementById("pf").innerText = feed.field6 || "N/A";
+        document.getElementById("timeOn").innerText = secondsToHMS(parseInt(feed.field7) || 0);
+        document.getElementById("timeOff").innerText = secondsToHMS(parseInt(feed.field8) || 0);
+
+        // Resaltar si la potencia está fuera del rango 70-123 W
+        const powerRow = document.getElementById("power").parentElement;
+        if (power < 70 || power > 123) {
+          powerRow.classList.add("alert");
+        } else {
+          powerRow.classList.remove("alert");
+        }
+
+        // Actualizar el mensaje de última actualización
+        document.getElementById("last-update").innerText = `Última actualización: ${formatDateTime(new Date())}`;
+      } catch (error) {
+        console.error("Error al actualizar valores:", error.message);
+        setErrorState();
+      }
+    }
+
+    // Función para actualizar el gráfico
+    function updateChart(feeds) {
+      try {
+        if (feeds.length === 0) {
+          console.warn("No hay datos para mostrar en el gráfico");
+          return;
+        }
+
+        console.log("Procesando datos para el gráfico:", feeds);
+        const labels = feeds.map((feed, index) => `Medición ${feeds.length - index}`);
+        const voltages = feeds.map(feed => {
+          const value = parseFloat(feed.field1);
+          return isNaN(value) ? 0 : value;
+        });
+        const currents = feeds.map(feed => {
+          const value = parseFloat(feed.field2);
+          return isNaN(value) ? 0 : value;
+        });
+        const powers = feeds.map(feed => {
+          const value = parseFloat(feed.field3);
+          return isNaN(value) ? 0 : value;
+        });
+
+        console.log("Datos preparados para el gráfico:", { labels, voltages, currents, powers });
+
+        pzemChart.data.labels = labels;
+        pzemChart.data.datasets[0].data = voltages;
+        pzemChart.data.datasets[1].data = currents;
+        pzemChart.data.datasets[2].data = powers;
+        console.log("Actualizando gráfico...");
+        pzemChart.update();
+        console.log("Gráfico actualizado exitosamente");
+      } catch (error) {
+        console.error("Error al actualizar el gráfico:", error.message);
+      }
+    }
+
+    // Función para establecer estado de error
+    function setErrorState(message = "Error") {
+      document.getElementById("voltage").innerText = message;
+      document.getElementById("current").innerText = message;
+      document.getElementById("power").innerText = message;
+      document.getElementById("energy").innerText = message;
+      document.getElementById("timePower70to120").innerText = message;
+      document.getElementById("pf").innerText = message;
+      document.getElementById("timeOn").innerText = message;
+      document.getElementById("timeOff").innerText = message;
+      document.getElementById("last-update").innerText = `Última actualización: ${message}`;
+    }
+
+    // Función para obtener los datos de ThingSpeak
+    function fetchData() {
+      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=2";
+
+      console.log("Haciendo solicitud a ThingSpeak:", apiUrl); // Depuración
+
+      fetch(apiUrl)
+        .then(response => {
+          console.log("Respuesta recibida:", response.status); // Depuración
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log("Datos recibidos:", data); // Depuración
+          if (!data.feeds) {
+            throw new Error("Respuesta de ThingSpeak no contiene 'feeds'");
+          }
+          const feeds = data.feeds;
+          if (feeds.length === 0) {
+            setErrorState("Sin datos recientes");
+            console.warn("No hay datos recientes en ThingSpeak");
+            return;
+          }
+          // Actualizar los valores en la página
+          updateValues(feeds[feeds.length - 1]);
+          // Actualizar el gráfico
+          updateChart(feeds);
+        })
+        .catch(error => {
+          console.error("Error al obtener datos:", error.message);
+          setErrorState();
+        });
+    }
+
+    // Configuración inicial del gráfico
+    let pzemChart;
+    try {
+      const ctx = document.getElementById("pzemChart").getContext("2d");
+      pzemChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Voltaje (V)",
+              data: [],
+              borderColor: "#0277bd",
+              fill: false,
+            },
+            {
+              label: "Corriente (A)",
+              data: [],
+              borderColor: "#ff6f61",
+              fill: false,
+            },
+            {
+              label: "Potencia (W)",
+              data: [],
+              borderColor: "#4caf50",
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Valor",
+              },
+            },
+            x: {
+              title: {
+                display: true,
+                text: "Tiempo",
+              },
+            },
+          },
+        },
+      });
+      console.log("Gráfico inicializado correctamente");
+    } catch (error) {
+      console.error("Error al inicializar el gráfico:", error.message);
+    }
+
+    // Iniciar actualizaciones
+    setTimeout(fetchData, 2000); // Primera carga después de 2 segundos
+    setInterval(fetchData, 60000); // Actualizar cada 60 segundos
+
+    // Alternar tema claro/oscuro y guardar preferencia
+    const themeToggle = document.getElementById("theme-toggle");
+    // Cargar la preferencia del tema desde localStorage
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark-theme");
+      themeToggle.innerText = "Cambiar a Tema Claro";
+    }
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-theme");
+      if (document.body.classList.contains("dark-theme")) {
+        themeToggle.innerText = "Cambiar a Tema Claro";
+        localStorage.setItem("theme", "dark");
+      } else {
+        themeToggle.innerText = "Cambiar a Tema Oscuro";
+        localStorage.setItem("theme", "light");
+      }
+    });
+  </script>
+</body>
+</html>
