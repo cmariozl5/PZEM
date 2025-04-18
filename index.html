@@ -118,20 +118,12 @@
 
         console.log("Procesando datos para el gráfico:", feeds);
         const labels = feeds.map((feed, index) => `Medición ${feeds.length - index}`);
-        const voltages = feeds.map(feed => {
-          const value = parseFloat(feed.field1);
-          return isNaN(value) ? null : value;
-        });
-        const currents = feeds.map(feed => {
-          const value = parseFloat(feed.field2);
-          return isNaN(value) ? null : value;
-        });
         const powers = feeds.map(feed => {
           const value = parseFloat(feed.field3);
           return isNaN(value) ? null : value;
         });
 
-        console.log("Datos preparados para el gráfico:", { labels, voltages, currents, powers });
+        console.log("Datos preparados para el gráfico:", { labels, powers });
 
         if (!pzemChart && typeof Chart !== 'undefined') {
           const ctx = document.getElementById("pzemChart").getContext("2d");
@@ -140,20 +132,6 @@
             data: {
               labels: labels,
               datasets: [
-                {
-                  label: "Voltaje (V)",
-                  data: voltages,
-                  borderColor: "#0277bd",
-                  fill: false,
-                  tension: 0.1,
-                },
-                {
-                  label: "Corriente (A)",
-                  data: currents,
-                  borderColor: "#ff6f61",
-                  fill: false,
-                  tension: 0.1,
-                },
                 {
                   label: "Potencia (W)",
                   data: powers,
@@ -171,15 +149,23 @@
                   beginAtZero: true,
                   title: {
                     display: true,
-                    text: "Valor",
+                    text: "Potencia (W)",
                   },
                   suggestedMin: 0,
+                  max: 30 // Ajustado según tu gráfica anterior (~20 W)
                 },
                 x: {
                   title: {
                     display: true,
                     text: "Tiempo",
                   },
+                  ticks: {
+                    maxRotation: 45,
+                    minRotation: 45,
+                    font: {
+                      size: 12
+                    }
+                  }
                 },
               },
               plugins: {
@@ -192,9 +178,7 @@
           console.log("Gráfico inicializado correctamente");
         } else if (pzemChart) {
           pzemChart.data.labels = labels;
-          pzemChart.data.datasets[0].data = voltages;
-          pzemChart.data.datasets[1].data = currents;
-          pzemChart.data.datasets[2].data = powers;
+          pzemChart.data.datasets[0].data = powers;
           pzemChart.update();
           console.log("Gráfico actualizado exitosamente");
         } else {
@@ -220,7 +204,7 @@
 
     // Función para obtener los datos de ThingSpeak
     function fetchData() {
-      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=2";
+      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=4"; // Cambiado a 3 mediciones
 
       console.log("Haciendo solicitud a ThingSpeak:", apiUrl);
 
