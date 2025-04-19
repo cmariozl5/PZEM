@@ -152,7 +152,7 @@
                     text: "Potencia (W)",
                   },
                   suggestedMin: 0,
-                  max: 30 // Ajustado según tu gráfica anterior (~20 W)
+                  // Eliminamos el max fijo para que se ajuste automáticamente
                 },
                 x: {
                   title: {
@@ -204,7 +204,7 @@
 
     // Función para obtener los datos de ThingSpeak
     function fetchData() {
-      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=4"; // Cambiado a 3 mediciones
+      const apiUrl = "https://api.thingspeak.com/channels/2907670/feeds.json?api_key=RHC260CCGJTB5IAX&results=3";
 
       console.log("Haciendo solicitud a ThingSpeak:", apiUrl);
 
