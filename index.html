@@ -15,6 +15,8 @@
   </script>
   <!-- Usar una CDN alternativa como respaldo -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" onload="console.log('Chart.js cargado desde CDN')" onerror="loadLocalChart()"></script>
+  <!-- Adaptador para manejar fechas -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <!-- Fallback adicional si la primera CDN falla -->
   <script>
     if (typeof Chart === 'undefined') {
@@ -117,24 +119,23 @@
         }
 
         console.log("Procesando datos para el gráfico:", feeds);
-        const labels = feeds.map((feed, index) => `Medición ${feeds.length - index}`);
-        const powers = feeds.map(feed => {
-          const value = parseFloat(feed.field3);
-          return isNaN(value) ? null : value;
-        });
+        // Usar timestamps de las mediciones
+        const dataPoints = feeds.map(feed => ({
+          x: new Date(feed.created_at),
+          y: parseFloat(feed.field3)
+        }));
 
-        console.log("Datos preparados para el gráfico:", { labels, powers });
+        console.log("Datos preparados para el gráfico:", dataPoints);
 
         if (!pzemChart && typeof Chart !== 'undefined') {
           const ctx = document.getElementById("pzemChart").getContext("2d");
           pzemChart = new Chart(ctx, {
             type: "line",
             data: {
-              labels: labels,
               datasets: [
                 {
                   label: "Potencia (W)",
-                  data: powers,
+                  data: dataPoints,
                   borderColor: "#4caf50",
                   fill: false,
                   tension: 0.1,
@@ -152,9 +153,15 @@
                     text: "Potencia (W)",
                   },
                   suggestedMin: 0,
-                  // Eliminamos el max fijo para que se ajuste automáticamente
                 },
                 x: {
+                  type: 'time',
+                  time: {
+                    unit: 'minute',
+                    displayFormats: {
+                      minute: 'HH:mm' // Formato: 16:00, 16:05, etc.
+                    }
+                  },
                   title: {
                     display: true,
                     text: "Tiempo",
@@ -177,8 +184,7 @@
           });
           console.log("Gráfico inicializado correctamente");
         } else if (pzemChart) {
-          pzemChart.data.labels = labels;
-          pzemChart.data.datasets[0].data = powers;
+          pzemChart.data.datasets[0].data = dataPoints;
           pzemChart.update();
           console.log("Gráfico actualizado exitosamente");
         } else {
